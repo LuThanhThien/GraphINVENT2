@@ -12,7 +12,14 @@ conda activate graphinvent2
 conda install -n graphinvent2 conda-forge::rdkit conda-forge::tqdm anaconda::h5py anaconda::scikit-learn matplotlib tensorboard -y
 ```
 
-Error: Nếu gặp lỗi khi cài đặt rdkit, bạn có thể thử cài đặt lại bằng cách:
+Error: Nếu gặp lỗi bên dưới khi chạy submit.py
+```
+ImportError: numpy.core.multiarray failed to import
+AttributeError: _ARRAY_API not found
+```
+
+Bạn có thể thử cài đặt lại numpy với phiên bản thấp hơn 2.0
+
 ```bash
 pip install "numpy<2.0"
 ```

@@ -1,22 +1,29 @@
 import pandas as pd
 from rdkit import Chem
+from argparse import ArgumentParser
+from config import dict2str, str2dict
 
+def parse_args():
+    """
+    Parse command line arguments for the script.
+    """
+    parser = ArgumentParser(description="Filter SMILES strings based on specified criteria.")
+    parser.add_argument("input_file", type=str, help="Path to the input CSV file containing SMILES strings.")
+    parser.add_argument("output_file", type=str, help="Path to the output .smi file for valid SMILES strings.")
+    parser.add_argument("--config", type=int, default=20000, help="Maximum number of molecules to write to output file.")
+    args = parser.parse_args()
+    config_dict = str2dict(args.config)
+    for key, value in config_dict.items():
+        setattr(args, key, value)
+    return args
 
-included_atoms = {'C', 'N', 'O', 'S'}
-included_charges = {-1, 0, 1}
-max_n_nodes = 50
-min_n_nodes = 15
-max_n_molecules = 20000
-
-def do_filter_smiles(smiles):
+def do_filter_smiles(smiles, config):
     """
     Parse a SMILES string, check atom types, and return a non-canonical SMILES.
     Returns:
       - non-canonical SMILES (str) if valid and only allowed atoms present
       - None otherwise
     """
-    global included_atoms, included_charges, max_n_nodes, min_n_nodes
-    
     # try to build molecule
     try:
         mol = Chem.MolFromSmiles(smiles)
@@ -28,27 +35,28 @@ def do_filter_smiles(smiles):
 
     # check atom symbols
     for atom in mol.GetAtoms():
-        if atom.GetSymbol() not in included_atoms:
+        if atom.GetSymbol() not in config.included_atoms:
             return None
 
     # check formal charge
     for atom in mol.GetAtoms():
-        if atom.GetFormalCharge() not in included_charges:
+        if atom.GetFormalCharge() not in config.included_charges:
             return None
         
     # check number of nodes
-    if mol.GetNumAtoms() > max_n_nodes:
+    if mol.GetNumAtoms() > config.max_n_nodes:
         return None
     
     # check min number of nodes
-    if mol.GetNumAtoms() < min_n_nodes:
+    if mol.GetNumAtoms() < config.min_n_nodes:
         return None
-    
+
     # export as non-canonical SMILES
-    return Chem.MolToSmiles(mol, canonical=False)
+    out = Chem.MolToSmiles(mol, canonical=False)
+    
+    return out
 
-
-def filter_to_smi(input_file, output_file):
+def filter_to_smi(config):
     """
     Filters SMILES strings from an input CSV file and writes valid, non-canonical ones
     to an output .smi file (space-delimited SMILES + Name).
@@ -57,7 +65,11 @@ def filter_to_smi(input_file, output_file):
         input_file (str): Path to the input CSV (expects columns "SMILES" and "Name").
         output_file (str): Path to the output .smi file.
     """
-    global max_n_molecules
+    input_file = config.input_file
+    output_file = config.output_file
+    print(f"Configuration: {dict2str(config.__dict__)}")
+    print(f"Input file: {input_file}")
+    print(f"Output file: {output_file}")
     
     print(f"Reading input file: {input_file}")
     df = pd.read_csv(input_file, sep=' ')
@@ -65,7 +77,7 @@ def filter_to_smi(input_file, output_file):
 
     # apply filter + conversion
     print("Filtering and converting SMILES...")
-    df['filtered_smiles'] = df['SMILES'].apply(do_filter_smiles)
+    df['filtered_smiles'] = df['SMILES'].apply(lambda x: do_filter_smiles(x, config))
 
     # drop any rows where do_filter_smiles returned None
     df = df[df['filtered_smiles'].notna()]
@@ -77,16 +89,13 @@ def filter_to_smi(input_file, output_file):
         f.write("SMILES Name\n")
         for idx, row in df.iterrows():
             f.write(f"{row['filtered_smiles']} {row['Name']}\n")
-            if idx >= max_n_molecules - 1:
+            if idx >= config.max_n_molecules - 1:
                 break
-            
+
     print(f" Total rows written: {idx + 1}")
     print("Done.")
 
 if __name__ == "__main__":
-    # Example usage
-    input_file = "/root/projects/GraphINVENT2/data/pre-training/minicoconut/flavonoid_new.smi"
-    output_file = "/root/projects/GraphINVENT2/data/pre-training/minicoconut/flavonoid_new_filtered.smi"
-
-    filter_to_smi(input_file, output_file)
-    print(f"Filtered SMILES strings written to {output_file}")
+    args = parse_args()
+    filter_to_smi(args)
+    

@@ -26,7 +26,6 @@ import h5py
 import torch
 from typing import Union
 
-
 def load_ts_properties_from_csv(csv_path : str) -> Union[dict, None]:
     """
     Loads CSV file containing training set properties and returns contents as a dictionary.

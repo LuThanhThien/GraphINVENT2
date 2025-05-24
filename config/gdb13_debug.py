@@ -1,4 +1,4 @@
-from __default__ import DefaultConfig
+from config.__default import DefaultConfig
 
 class Config(DefaultConfig):
     """
@@ -7,6 +7,7 @@ class Config(DefaultConfig):
     def __init__(self):
         # set paths here
         self.graphinvent_path = "./graphinvent/"
+        self.tool_path       = "./tools/"
         self.data_path        = "./data/pre-training/"
 
         # set SLURM params here (if using SLURM)
@@ -42,4 +43,13 @@ class Config(DefaultConfig):
             # additional paramaters can be defined here, if different from the "defaults"
             # for instance, for "generate" jobs, don't forget to specify "generation_epoch"
             # and "n_samples"
+        }
+
+        # config for filter
+        self.filter_params = {
+            "included_atoms": {'C', 'N', 'O', 'S'},
+            "included_charges": {-1, 0, 1},
+            "max_n_nodes": 50,
+            "min_n_nodes": 15,
+            "max_n_molecules": 20000,
         }

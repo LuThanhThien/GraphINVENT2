@@ -12,7 +12,7 @@ def to_smiles_original(can_smiles):
     plain_smiles = Chem.MolToSmiles(mol, canonical=False)
 
     return plain_smiles
-    
+
 def filter_smiles(input_file, output_file):
     """
     Filters SMILES strings from an input CSV file and writes valid ones to an output CSV file.

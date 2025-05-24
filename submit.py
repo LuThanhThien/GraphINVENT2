@@ -4,7 +4,7 @@ Example submission script for a GraphINVENT2 training job (unconditional generat
  a reinforcement learning (fine-tuning) job.
 
 To run, type:
- user@cluster GraphINVENT2$ python submit.py
+  user@cluster GraphINVENT2$ python submit.py config_path [--python_path python_path]
 """
 # load general packages and functions
 import csv
@@ -13,8 +13,8 @@ import os
 from pathlib import Path
 import subprocess
 import time
-import torch
 from argparse import ArgumentParser
+from config import load_config
 
 def parse_args():
     """
@@ -26,34 +26,6 @@ def parse_args():
     parser.add_argument("--python_path", type=str, default=default_python_path, help="Path to the Python executable.")
     args = parser.parse_args()
     return args
-
-def load_config(args):
-    """
-    Load the configuration from a given path. This function is a placeholder and should be
-    replaced with the actual implementation to load the configuration.
-
-    Args:
-        path (str): Path to the configuration file.
-
-    Returns:
-        config: Loaded configuration object.
-    """
-    cfg_path = Path(args.config)
-    if not cfg_path.exists():
-        raise FileNotFoundError(f"Configuration file not found: {cfg_path}")
-    
-    # Assert python file
-    if not cfg_path.suffix == ".py":
-        raise ValueError(f"Configuration file must be a Python file: {cfg_path}")
-    
-    # Load Config class from the specified path
-    sys.path.append(str(cfg_path.parent))
-    module_name = cfg_path.stem
-    module = __import__(module_name)
-    config_class = getattr(module, "Config")
-    config = config_class()
-    setattr(config, "python_path", args.python_path)
-    return config
 
 def submit(config):
     """
