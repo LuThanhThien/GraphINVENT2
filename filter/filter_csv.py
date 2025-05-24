@@ -10,7 +10,7 @@ def parse_args_preprocess():
     parser = ArgumentParser(description="Filter SMILES strings based on atom types and charges.")
     parser.add_argument("--input_file", type=str, required=True, help="Path to the input CSV file.")
     parser.add_argument("--output_file", type=str, required=True, help="Path to the output .smi file.")
-    parser.add_argument("--smiles_column_name", type=str, default='SMILES', help="Column name for SMILES strings in the input CSV.")
+    parser.add_argument("--smi_column_name", type=str, default='SMILES', help="Column name for SMILES strings in the input CSV.")
     parser.add_argument("--overwrite", type=bool, default=True, help="Overwrite existing output file without prompt.")
 
     return parser.parse_args()
@@ -38,7 +38,7 @@ def filter_smiles(args):
     # Get input and output file paths from arguments
     input_file = args.input_file
     output_file = args.output_file
-    smiles_column_name = args.smiles_column_name # smile column name in the input CSV
+    smi_column_name = args.smi_column_name # smile column name in the input CSV
     overwrite = args.overwrite  # whether to disable warning options
     
     # Check if output file already exists
@@ -53,13 +53,13 @@ def filter_smiles(args):
     df = pd.read_csv(input_file)
     
     # Check if the specified SMILES column exists
-    if smiles_column_name not in df.columns:
-        raise ValueError(f"Column '{smiles_column_name}' not found in the input CSV file.")
+    if smi_column_name not in df.columns:
+        raise ValueError(f"Column '{smi_column_name}' not found in the input CSV file.")
     
     # Filter out rows with empty or null SMILES strings, and apply the filter_smi function
-    valid_smiles = df[df[smiles_column_name].notnull() & df[smiles_column_name].str.strip().ne('')]
-    valid_smiles = valid_smiles.drop_duplicates(subset=[smiles_column_name])
-    valid_smiles['SMILES'] = valid_smiles[smiles_column_name].apply(filter_smi)
+    valid_smiles = df[df[smi_column_name].notnull() & df[smi_column_name].str.strip().ne('')]
+    valid_smiles = valid_smiles.drop_duplicates(subset=[smi_column_name])
+    valid_smiles['SMILES'] = valid_smiles[smi_column_name].apply(filter_smi)
     valid_smiles['Name'] = valid_smiles.index.astype(str)
     valid_smiles = valid_smiles[['SMILES', 'Name']]
 

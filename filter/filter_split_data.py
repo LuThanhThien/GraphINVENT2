@@ -2,7 +2,6 @@ from pathlib import Path
 import os
 import argparse
 
-
 def main():
     p = argparse.ArgumentParser(
         description="Split a .smi file into train, val, and test sets."
@@ -56,14 +55,14 @@ def main():
     train_lines = new_lines[:train_size]
     test_lines = new_lines[train_size:train_size + test_size]
     val_lines = new_lines[train_size + test_size:]
-    
+
     with open(output_dir / "train.smi", "w") as fout:
         fout.writelines(train_lines)
     with open(output_dir / "test.smi", "w") as fout:
         fout.writelines(test_lines)
     with open(output_dir / "valid.smi", "w") as fout:
         fout.writelines(val_lines)
-        
+
     print(f"Split {num_lines} lines into {len(train_lines)} train, {len(test_lines)} test, and {len(val_lines)} val lines.")
 
 if __name__ == "__main__":
