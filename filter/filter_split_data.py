@@ -53,7 +53,6 @@ def main():
     num_lines = len(new_lines)
     train_size = int(num_lines * args.train)
     test_size = int(num_lines * args.test)
-    val_size = num_lines - train_size - test_size
     train_lines = new_lines[:train_size]
     test_lines = new_lines[train_size:train_size + test_size]
     val_lines = new_lines[train_size + test_size:]

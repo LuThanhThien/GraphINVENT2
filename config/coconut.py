@@ -46,7 +46,7 @@ class Config(DefaultConfig):
         }
         
         # config for filter
-        self.filter_params = {
+        self.preprocess_params = {
             "included_atoms": {'C', 'N', 'O', 'S'},
             "included_charges": {-1, 0, 1},
             "max_n_nodes": 50,

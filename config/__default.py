@@ -1,5 +1,7 @@
+import os
 import sys
 from pathlib import Path
+from argparse import ArgumentParser
 
 class DefaultConfig:
     """
@@ -63,6 +65,20 @@ def str2dict(args: str):
     Returns:
         dict: Dictionary representation of the arguments.
     """
+    if args is None:
+        return {}
     if isinstance(args, dict):
         return args
     return {k: v for k, v in (item.split() for item in args.split("--") if item)}
+
+def parse_args_submit():
+    """
+    Parse command line arguments for the script.
+    """
+    default_python_path = os.path.join(os.path.dirname(sys.executable), "python")
+    parser = ArgumentParser(description="Submit GraphINVENT2 jobs.")
+    parser.add_argument("config", type=str, help="Path to the configuration file.")
+    parser.add_argument("--python_path", type=str, default=default_python_path, help="Path to the Python executable.")
+    args = parser.parse_args()
+    return args
+

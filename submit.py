@@ -13,19 +13,7 @@ import os
 from pathlib import Path
 import subprocess
 import time
-from argparse import ArgumentParser
-from config import load_config
-
-def parse_args():
-    """
-    Parse command line arguments for the script.
-    """
-    default_python_path = os.path.join(os.path.dirname(sys.executable), "python")
-    parser = ArgumentParser(description="Submit GraphINVENT2 jobs.")
-    parser.add_argument("config", type=str, help="Path to the configuration file.")
-    parser.add_argument("--python_path", type=str, default=default_python_path, help="Path to the Python executable.")
-    args = parser.parse_args()
-    return args
+from config import load_config, parse_args_submit
 
 def submit(config):
     """
@@ -34,9 +22,46 @@ def submit(config):
     Args:
         config: Configuration object containing all settings and parameters.
     """
+    if config.job_type == "pre-filter" or config.job_type == "post-filter":
+        submit_filter(config)
+        return
+    
     dataset_output_path, tensorboard_path = create_output_directories(config)
     submit_jobs(config, dataset_output_path, tensorboard_path)
 
+def submit_one_filter(config, params, script_name):
+    """
+    Creates and submits a single job script based on the provided parameters.
+
+    Args:
+        config: Configuration object containing all settings and parameters.
+        params: Dictionary of parameters for the job.
+        script_name: Name of the script to be executed.
+    """
+    # This path as PYTHONPATH
+    proj_path = os.path.dirname(os.path.abspath(__file__))
+    # Export the project path to PYTHONPATH
+    os.environ["PYTHONPATH"] = proj_path
+
+    process_run = [
+        config.python_path, 
+        script_name,
+    ]
+    for key, value in params.items():
+        process_run.append(f"--{key}")
+        process_run.append(str(value))
+
+    subprocess.run(process_run, check=True)
+
+def submit_filter(config):
+    """
+    Creates and submits submission scripts based on the provided configuration.
+
+    Args:
+        config: Configuration object containing all settings and parameters.
+    """
+    submit_one_filter(config, config.filter_params, "filter/filter_smi.py")
+    
 def create_output_directories(config):
     """
     Creates output and tensorboard directories.
@@ -159,6 +184,6 @@ def write_submission_script(config, job_dir) -> None:
         submit_file.write(f"({config.python_path} {main_py_path} --job-dir {job_dir} > {output_filename})\n")
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = parse_args_submit()
     config = load_config(args)  # load the config object
     submit(config)     # pass the config object to the submit function

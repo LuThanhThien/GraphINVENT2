@@ -7,17 +7,16 @@ class Config(DefaultConfig):
     def __init__(self):
         # set paths here
         self.graphinvent_path = "./graphinvent/"
-        self.tool_path       = "./tools/"
         self.data_path        = "./data/pre-training/"
         
         # set SLURM params here (if using SLURM)
-        self.use_slurm        = False               # use SLURM or not
+        self.use_slurm        = False              # use SLURM or not
         self.run_time         = "0-06:00:00"       # d-hh:mm:ss
         self.account          = "XXXXXXXXXX"       # if cluster requires specific allocation/account, use here
 
         # define what you want to do for the specified job(s)
         self.dataset          = "minicoconut"  # dataset name in "./data/pre-training/"
-        self.job_type         = "preprocess"   # "preprocess", "train", "generate", "fine-tune", or "test"
+        self.job_type         = "pre-filter"   # "pre-filter", " post-filter", "preprocess", "train", "generate", "fine-tune", or "test"
         self.jobdir_start_idx = 0              # where to start indexing job dirs
         self.n_jobs           = 1              # number of jobs to run per model
         self.restart          = False          # whether or not this is a restart job
@@ -45,11 +44,18 @@ class Config(DefaultConfig):
             # and "n_samples"
         }
 
-        # config for filter
+        # config for pre-filter
         self.filter_params = {
-            "included_atoms": {'C', 'N', 'O', 'S'},
-            "included_charges": {-1, 0, 1},
-            "max_n_nodes": 50,
-            "min_n_nodes": 15,
-            "max_n_molecules": 20000,
+            "input_file": f"./data/pre-training/minicoconut/raw/flavonoid_new.smi",
+            "output_file": f"./data/pre-training/minicoconut/raw/flavonoid_new_filter.smi",
+            "overwrite": True,
+            "derivative": {},
+            # "included_atoms": {'C', 'N', 'O', 'S'},
+            # "included_charges": {-1, 0, 1},
+            # "max_n_nodes": 50,
+            "min_n_nodes": 10,
+            # "max_n_molecules": 20000,
         }
+        
+        # config for post filter
+        #TODO: Add postprocess filter parameters if needed
