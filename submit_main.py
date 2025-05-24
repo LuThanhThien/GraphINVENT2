@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 import subprocess
 import time
-import torch
 
 
 class Config:
@@ -22,14 +21,13 @@ class Config:
     """
     def __init__(self):
         # set paths here
-        self.python_path      = f"/root/miniconda3/envs/graphinvent2/bin/python"
+        self.python_path      = "apptainer exec docker/graphinvent.sif /opt/conda/envs/graphinvent/bin/python"
         self.graphinvent_path = "./graphinvent/"
         self.data_path        = "./data/pre-training/"
 
         # define what you want to do for the specified job(s)
-        self.dataset          = "Papyrus"  # dataset name in "./data/pre-training/"
-        # "preprocess", "train", "generate", "fine-tune", or "test"
-        self.job_type         = "generate"        #***
+        self.dataset          = "gdb13-debug"  # dataset name in "./data/pre-training/"
+        self.job_type         = "train"        # "preprocess", "train", "generate", "fine-tune", or "test"
         self.jobdir_start_idx = 0              # where to start indexing job dirs
         self.n_jobs           = 1              # number of jobs to run per model
         self.restart          = False          # whether or not this is a restart job
@@ -37,28 +35,25 @@ class Config:
         self.jobname          = self.job_type  # label used to create a job sub directory (can be anything)
 
         # set SLURM params here (if using SLURM)
-        self.use_slurm        = False               # use SLURM or not
+        self.use_slurm        = True               # use SLURM or not
         self.run_time         = "0-06:00:00"       # d-hh:mm:ss
         self.account          = "XXXXXXXXXX"       # if cluster requires specific allocation/account, use here
 
         # define dataset-specific parameters
         self.params = {
-            "atom_types"     : ['C', 'N', 'O', 'F', 'P', 'S', 'Cl', 'Br', 'I'],              #***
-            "formal_charge"  : [-1, 0, +1],                             #***            
-            "max_n_nodes"    : 49,                                      #***  
+            "atom_types"     : ["C", "N", "O", "S", "Cl"],
+            "formal_charge"  : [-1, 0, +1],
+            "max_n_nodes"    : 13,
             "job_type"       : self.job_type,
             "dataset_dir"    : f"{self.data_path}{self.dataset}/",
             "restart"        : self.restart,
-            "sample_every"   : 1,
+            "sample_every"   : 50,
             "init_lr"        : 1e-4,
-            "epochs"         : 100,
-            "batch_size"     : 500,
-            "block_size"     : 50000,
+            "epochs"         : 1000,
+            "batch_size"     : 50,
+            "block_size"     : 1000,
             "device"         : "cuda",  # or "cpu" if no CUDA
-            "generation_epoch": 100,     #Lựa chọn epoch tốt nhất để train
-            "n_samples"      : 100000,   # <-- how many structures to generate
-            "lrdf"           : 0.9999,
-            "lrdi"           : 1000,
+            "n_samples"      : 100,
             # additional paramaters can be defined here, if different from the "defaults"
             # for instance, for "generate" jobs, don't forget to specify "generation_epoch"
             # and "n_samples"
@@ -92,8 +87,7 @@ def create_output_directories(config):
         A tuple of dataset_output_path and tensorboard_path.
     """
     base_path = Path(f"./output/output_{config.dataset}")
-    # dataset_output_path = base_path / config.jobname if config.jobname else base_path
-    dataset_output_path = base_path 
+    dataset_output_path = base_path / config.jobname if config.jobname else base_path
     tensorboard_path = dataset_output_path / "tensorboard"
 
     dataset_output_path.mkdir(parents=True, exist_ok=True)

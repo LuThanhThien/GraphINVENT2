@@ -27,7 +27,7 @@ class Config:
         self.data_path        = "./data/pre-training/"
 
         # define what you want to do for the specified job(s)
-        self.dataset          = "Papyrus"  # dataset name in "./data/pre-training/"
+        self.dataset          = "gdb13-debug"  # dataset name in "./data/pre-training/"
         # "preprocess", "train", "generate", "fine-tune", or "test"
         self.job_type         = "generate"        #***
         self.jobdir_start_idx = 0              # where to start indexing job dirs
@@ -43,22 +43,20 @@ class Config:
 
         # define dataset-specific parameters
         self.params = {
-            "atom_types"     : ['C', 'N', 'O', 'F', 'P', 'S', 'Cl', 'Br', 'I'],              #***
+            "atom_types"     : ["C", "N", "O", "S", "Cl"],              #***
             "formal_charge"  : [-1, 0, +1],                             #***            
-            "max_n_nodes"    : 49,                                      #***  
+            "max_n_nodes"    : 13,                                      #***  
             "job_type"       : self.job_type,
             "dataset_dir"    : f"{self.data_path}{self.dataset}/",
             "restart"        : self.restart,
             "sample_every"   : 1,
             "init_lr"        : 1e-4,
-            "epochs"         : 100,
-            "batch_size"     : 500,
-            "block_size"     : 50000,
+            "epochs"         : 1000,
+            "batch_size"     : 50,
+            "block_size"     : 10000,
             "device"         : "cuda",  # or "cpu" if no CUDA
-            "generation_epoch": 100,     #Lựa chọn epoch tốt nhất để train
-            "n_samples"      : 100000,   # <-- how many structures to generate
-            "lrdf"           : 0.9999,
-            "lrdi"           : 1000,
+            "n_samples"      : 1000, 
+            "generation_epoch": 100,  #** <-- which model to use (i.e. which epoch)
             # additional paramaters can be defined here, if different from the "defaults"
             # for instance, for "generate" jobs, don't forget to specify "generation_epoch"
             # and "n_samples"
