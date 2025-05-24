@@ -78,6 +78,7 @@ def filter_smi(smiles, config):
         for derivative in config.derivative:
             dev_mol = Chem.MolFromSmiles(derivative)
             if dev_mol is None:
+                print(f"Warning: Invalid derivative SMILES '{derivative}'")
                 continue
             if mol.HasSubstructMatch(dev_mol):
                 is_derivative = True
@@ -122,21 +123,22 @@ def filter_to_smi(config):
     df = pd.read_csv(input_file, sep=' ')
     if 'SMILES' not in df.columns or 'Name' not in df.columns:
         raise ValueError("Input CSV must contain 'SMILES' and 'Name' columns.")
+    print(f"Number of molecules before filtering: {len(df)}")
     
     # filter out rows with empty or null SMILES strings
     df['filtered_smiles'] = df['SMILES'].apply(lambda x: filter_smi(x, config))
     df = df[df['filtered_smiles'].notna()]
     df = df.drop_duplicates(subset=['filtered_smiles'])
-    df['Name'] = df.index.astype(str)
-    df = df[['filtered_smiles', 'Name']]
-    print(f" Rows after filtering: {len(df)}")
+    print(f"Number of molecules after filtering: {len(df)}")
 
     # write out to .smi
     print(f"Writing results to: {output_file}")
+    idx = 0
     with open(output_file, 'w') as f:
         f.write("SMILES Name\n")
-        for idx, row in df.iterrows():
-            f.write(f"{row['filtered_smiles']} {row['Name']}\n")
+        for _, row in df.iterrows():
+            f.write(f"{row['filtered_smiles']} {idx}\n")
+            idx += 1
             if config.max_n_molecules and idx >= config.max_n_molecules - 1:
                 break
 

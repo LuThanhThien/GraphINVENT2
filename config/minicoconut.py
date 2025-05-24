@@ -46,16 +46,29 @@ class Config(DefaultConfig):
 
         # config for pre-filter
         self.filter_params = {
-            "input_file": f"./data/pre-training/minicoconut/raw/flavonoid_new.smi",
-            "output_file": f"./data/pre-training/minicoconut/raw/flavonoid_new_filter.smi",
+            "input_file": f"./data/pre-training/minicoconut/raw/flavonoid_new_filter.smi",
+            "output_file": f"./data/pre-training/minicoconut/raw/flavonoid_final.smi",
             "overwrite": True,
-            "derivative": {},
+            "derivative": {
+                "O=C1CC(c2ccc(O)cc2)Oc2cc(O)cc(O)c21",  # naringenin
+                "O=c1ccc2ccccc2o1",      # flavone
+                "O=c1cc(-c2ccc(O)cc2)oc2ccc(O)cc12",   # apigenin
+                "O=c1cc(-c2ccc(O)c(O)c2)oc2cc(O)c(O)cc12",  # quercetin
+                "O=c1cc(-c2ccc(O)c(O)c2)oc2ccc(O)cc12",     # kaempferol
+                # "O=c1cc(-c2ccc(O)c(O)c2)oc2ccc(O)cc12",    # luteolin
+                "O=c1cc(-c2ccccc2)oc2ccccc12",              # chrysin
+                # "O=c1cc(-c2ccc(O)c(O)c2)oc2ccc(O)cc12",     # galangin
+                # "O=c1cc(-c2ccc(O)c(O)c2)oc2ccc(O)cc12",     # fisetin
+                # "O=c1cc(-c2ccc(O)c(O)c2)oc2ccc(O)cc12",      # baicalein
+                "O=C1c2c(O)cc(O)cc2OC(c2ccc(O)c(O)c2)C1O",   #taxifolin
+                "O=c1c(O)c(-c2ccc(O)cc2O)oc2cc(O)cc(O)c12"   #Morin
+            },
             # "included_atoms": {'C', 'N', 'O', 'S'},
             # "included_charges": {-1, 0, 1},
             # "max_n_nodes": 50,
             "min_n_nodes": 10,
             # "max_n_molecules": 20000,
         }
-        
+
         # config for post filter
         #TODO: Add postprocess filter parameters if needed
