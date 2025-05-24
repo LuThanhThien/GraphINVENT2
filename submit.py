@@ -14,62 +14,44 @@ from pathlib import Path
 import subprocess
 import time
 import torch
+from argparse import ArgumentParser
 
 
-class Config:
+def parse_args():
     """
-    Configuration for running GraphINVENT2 jobs. Modify these parameters as necessary.
+    Parse command line arguments for the script.
     """
-    def __init__(self):
-        # set paths here
-        self.python_path      = f"/root/miniconda3/envs/graphinvent2/bin/python"
-        self.graphinvent_path = "./graphinvent/"
-        self.data_path        = "./data/pre-training/"
+    parser = ArgumentParser(description="Submit GraphINVENT2 jobs.")
+    parser.add_argument("config", type=str, required=True, help="Path to the configuration file.")
+    args = parser.parse_args()
+    return args
 
-        # define what you want to do for the specified job(s)
-        self.dataset          = "Papyrus"  # dataset name in "./data/pre-training/"
-        # "preprocess", "train", "generate", "fine-tune", or "test"
-        self.job_type         = "generate"        #***
-        self.jobdir_start_idx = 0              # where to start indexing job dirs
-        self.n_jobs           = 1              # number of jobs to run per model
-        self.restart          = False          # whether or not this is a restart job
-        self.force_overwrite  = True           # overwrite job directories which already exist
-        self.jobname          = self.job_type  # label used to create a job sub directory (can be anything)
+def load_config(path):
+    """
+    Load the configuration from a given path. This function is a placeholder and should be
+    replaced with the actual implementation to load the configuration.
 
-        # set SLURM params here (if using SLURM)
-        self.use_slurm        = False               # use SLURM or not
-        self.run_time         = "0-06:00:00"       # d-hh:mm:ss
-        self.account          = "XXXXXXXXXX"       # if cluster requires specific allocation/account, use here
+    Args:
+        path (str): Path to the configuration file.
 
-        # define dataset-specific parameters
-        self.params = {
-            "atom_types"     : ['C', 'N', 'O', 'F', 'P', 'S', 'Cl', 'Br', 'I'],              #***
-            "formal_charge"  : [-1, 0, +1],                             #***            
-            "max_n_nodes"    : 49,                                      #***  
-            "job_type"       : self.job_type,
-            "dataset_dir"    : f"{self.data_path}{self.dataset}/",
-            "restart"        : self.restart,
-            "sample_every"   : 1,
-            "init_lr"        : 1e-4,
-            "epochs"         : 100,
-            "batch_size"     : 500,
-            "block_size"     : 50000,
-            "device"         : "cuda",  # or "cpu" if no CUDA
-            "generation_epoch": 100,     #Lựa chọn epoch tốt nhất để train
-            "n_samples"      : 100000,   # <-- how many structures to generate
-            "lrdf"           : 0.9999,
-            "lrdi"           : 1000,
-            # additional paramaters can be defined here, if different from the "defaults"
-            # for instance, for "generate" jobs, don't forget to specify "generation_epoch"
-            # and "n_samples"
-        }
-
-    def update_paths(self, job_dir, tensorboard_dir):
-        """
-        Update dynamic paths for each job in the configuration.
-        """
-        self.params['job_dir'] = str(job_dir)+"/"
-        self.params['tensorboard_dir'] = str(tensorboard_dir)+"/"
+    Returns:
+        config: Loaded configuration object.
+    """
+    cfg_path = Path(path)
+    if not cfg_path.exists():
+        raise FileNotFoundError(f"Configuration file not found: {cfg_path}")
+    
+    # Assert python file
+    if not cfg_path.suffix == ".py":
+        raise ValueError(f"Configuration file must be a Python file: {cfg_path}")
+    
+    # Load Config class from the specified path
+    sys.path.append(str(cfg_path.parent))
+    module_name = cfg_path.stem
+    module = __import__(module_name)
+    config_class = getattr(module, "Config")
+    config = config_class()
+    return config
 
 def submit(config):
     """
@@ -202,5 +184,6 @@ def write_submission_script(config, job_dir) -> None:
         submit_file.write(f"({config.python_path} {main_py_path} --job-dir {job_dir} > {output_filename})\n")
 
 if __name__ == "__main__":
-    config = Config()  # create an instance of the Config class
+    args = parse_args()
+    config = load_config(args.config)  # load the config object
     submit(config)     # pass the config object to the submit function
