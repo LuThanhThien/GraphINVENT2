@@ -12,6 +12,11 @@ conda activate graphinvent2
 conda install -n graphinvent2 conda-forge::rdkit conda-forge::tqdm anaconda::h5py anaconda::scikit-learn matplotlib tensorboard -y
 ```
 
+Error: Nếu gặp lỗi khi cài đặt rdkit, bạn có thể thử cài đặt lại bằng cách:
+```bash
+pip install "numpy<2.0"
+```
+
 # Tải dữ liệu:
 
 Tải và giải nén dữ liệu từ:

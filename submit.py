@@ -16,17 +16,18 @@ import time
 import torch
 from argparse import ArgumentParser
 
-
 def parse_args():
     """
     Parse command line arguments for the script.
     """
+    default_python_path = os.path.join(os.path.dirname(sys.executable), "python")
     parser = ArgumentParser(description="Submit GraphINVENT2 jobs.")
-    parser.add_argument("config", type=str, required=True, help="Path to the configuration file.")
+    parser.add_argument("config", type=str, help="Path to the configuration file.")
+    parser.add_argument("--python_path", type=str, default=default_python_path, help="Path to the Python executable.")
     args = parser.parse_args()
     return args
 
-def load_config(path):
+def load_config(args):
     """
     Load the configuration from a given path. This function is a placeholder and should be
     replaced with the actual implementation to load the configuration.
@@ -37,7 +38,7 @@ def load_config(path):
     Returns:
         config: Loaded configuration object.
     """
-    cfg_path = Path(path)
+    cfg_path = Path(args.config)
     if not cfg_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {cfg_path}")
     
@@ -51,6 +52,7 @@ def load_config(path):
     module = __import__(module_name)
     config_class = getattr(module, "Config")
     config = config_class()
+    setattr(config, "python_path", args.python_path)
     return config
 
 def submit(config):
@@ -140,6 +142,7 @@ def submit_job(config, job_dir):
         subprocess.run(["sbatch", str(job_dir / "submit.sh")], check=True)
     else:
         print("* Running job as a normal process.", flush=True)
+        # Get python path from current environment
         subprocess.run([config.python_path, config.graphinvent_path + "main.py", "--job-dir", str(job_dir)+"/"], check=True)
 
 def write_input_csv(config, job_dir, filename="params.csv") -> None:
@@ -185,5 +188,5 @@ def write_submission_script(config, job_dir) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
-    config = load_config(args.config)  # load the config object
+    config = load_config(args)  # load the config object
     submit(config)     # pass the config object to the submit function
